@@ -29,6 +29,12 @@ public class AppUserController {
         return ResponseEntity.ok(appUser);
     }
 
+    @GetMapping("/by-provider/{providerId}")
+    public ResponseEntity<AppUser> getAppUserById(@PathVariable String providerId) {
+        AppUser appUser = appUserService.getAppUserByProviderId(providerId);
+        return ResponseEntity.ok(appUser);
+    }
+
     @PostMapping
     public ResponseEntity<AppUser> createAppUser(@RequestBody AppUser appUser) {
         AppUser createdAppUser = appUserService.createAppUser(appUser);

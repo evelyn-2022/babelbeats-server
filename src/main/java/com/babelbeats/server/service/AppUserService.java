@@ -28,6 +28,11 @@ public class AppUserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
     }
 
+    public AppUser getAppUserByProviderId(String providerId) {
+        return appUserRepository.findByProviderId(providerId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with providerId: " + providerId));
+    }
+
     public AppUser createAppUser(AppUser appUser) {
         if (appUser.getName() == null) {
             throw new BadRequestException("Name is required field.");

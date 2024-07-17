@@ -11,6 +11,8 @@ public class AppUser {
     private String name;
     private String email;
     private String profilePic;
+    private String cognitoSub;
+    private String providerId;
 
     // Getters and Setters
     public Long getId() {
@@ -43,5 +45,21 @@ public class AppUser {
 
     public void setProfilePic(String profilePic) {
         this.profilePic = profilePic;
+    }
+
+    public String getCognitoSub() {
+        return cognitoSub;
+    }
+
+    public void setCognitoSub(String cognitoSub) {
+        this.cognitoSub = cognitoSub;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
     }
 }
