@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
@@ -16,13 +17,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
                                 .requestMatchers(HttpMethod.GET).permitAll()
-                                .requestMatchers(HttpMethod.POST, "/user/**").authenticated()
-                                .requestMatchers(HttpMethod.PUT, "/user/**").authenticated()
-                                .requestMatchers(HttpMethod.PATCH, "/user/**").authenticated()
-                                .requestMatchers(HttpMethod.DELETE, "/user/**").authenticated()
+                                .requestMatchers(HttpMethod.POST, "/api/appusers").authenticated()
+                                .requestMatchers(HttpMethod.PUT, "/api/appusers/**").authenticated()
+                                .requestMatchers(HttpMethod.PATCH, "/api/appusers/**").authenticated()
+                                .requestMatchers(HttpMethod.DELETE, "/api/appusers/**").authenticated()
+                                .requestMatchers(HttpMethod.DELETE, "/api/appusers").authenticated()
                                 .anyRequest().permitAll()  // Other requests are permitted without authentication
                 )
                 .oauth2ResourceServer(oauth2 ->

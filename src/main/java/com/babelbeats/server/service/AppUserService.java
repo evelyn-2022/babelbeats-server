@@ -71,5 +71,9 @@ public class AppUserService {
         }
         appUserRepository.deleteById(id);
     }
+
+    public void deleteAllAppUsers() {
+        appUserRepository.deleteAll();
+    }
 }
 

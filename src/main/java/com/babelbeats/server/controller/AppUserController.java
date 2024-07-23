@@ -58,4 +58,10 @@ public class AppUserController {
         appUserService.deleteAppUser(id);
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping
+    public ResponseEntity<Void> deleteAllAppUsers() {
+        appUserService.deleteAllAppUsers();
+        return ResponseEntity.noContent().build();
+    }
 }
