@@ -1,0 +1,31 @@
+# Use the early access version of OpenJDK 22
+FROM openjdk:22-ea-jdk-slim AS build
+WORKDIR /app
+
+# Copy Maven wrapper and pom files
+COPY .mvn/ .mvn
+COPY mvnw pom.xml ./
+RUN ./mvnw dependency:go-offline
+
+# Copy the application code
+COPY src ./src
+
+# Build the application (to fetch dependencies)
+RUN ./mvnw clean compile -DskipTests
+
+# Use the same image to run the application
+FROM openjdk:22-ea-jdk-slim
+WORKDIR /app
+
+# Install Maven in the container for development purposes
+RUN apt-get update && apt-get install -y maven
+
+# Copy all necessary files
+COPY --from=build /app /app
+COPY . /app
+
+# Expose the port the app runs on
+EXPOSE 8080
+
+# Run Spring Boot with hot reloading enabled
+CMD ["./mvnw", "spring-boot:run"]

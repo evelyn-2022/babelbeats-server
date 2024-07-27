@@ -13,7 +13,7 @@ public class CorsConfig {
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOrigin("http://localhost:5173"); // Adjust the origin as needed
+        config.addAllowedOrigin("https://localhost:3000"); // Adjust the origin as needed
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         config.setAllowCredentials(true); // If you need to send cookies
