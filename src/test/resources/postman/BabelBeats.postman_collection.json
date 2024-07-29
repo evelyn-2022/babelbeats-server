@@ -1,0 +1,492 @@
+{
+  "info": {
+    "_postman_id": "34dcd7ff-c69a-4ac0-9f50-51bbd6dde28c",
+    "name": "BabelBeats",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "26701309"
+  },
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var clientId = pm.environment.get(\"client_id\");",
+                  "var username = pm.environment.get(\"cognito_username\");",
+                  "var password = pm.environment.get(\"cognito_password\");",
+                  "",
+                  "pm.sendRequest({",
+                  "    url: \"https://cognito-idp.us-east-1.amazonaws.com/\",",
+                  "    method: 'POST',",
+                  "    header: {",
+                  "        'X-Amz-Target': 'AWSCognitoIdentityProviderService.InitiateAuth',",
+                  "        'Content-Type': 'application/x-amz-json-1.1'",
+                  "    },",
+                  "    body: {",
+                  "        mode: 'raw',",
+                  "        raw: JSON.stringify({",
+                  "            \"AuthParameters\": {",
+                  "                \"USERNAME\": username,",
+                  "                \"PASSWORD\": password",
+                  "            },",
+                  "            \"AuthFlow\": \"USER_PASSWORD_AUTH\",",
+                  "            \"ClientId\": clientId",
+                  "        }),",
+                  "        options: {",
+                  "            raw: {",
+                  "                language: 'json'",
+                  "            }",
+                  "        }",
+                  "    }",
+                  "}, function (error, response) {",
+                  "    if (error) {",
+                  "        console.error(\"Error in request:\", error);",
+                  "        return;",
+                  "    }",
+                  "",
+                  "    if (response && response.json()) {",
+                  "        var responseJson = response.json();",
+                  "",
+                  "        if (responseJson.AuthenticationResult) {",
+                  "            pm.environment.set(\"cognitoAccessToken\", responseJson.AuthenticationResult.AccessToken);",
+                  "            pm.environment.set(\"cognitoIdToken\", responseJson.AuthenticationResult.IdToken);",
+                  "        } else {",
+                  "            console.error(\"AuthenticationResult not found in response:\", responseJson);",
+                  "        }",
+                  "    } else {",
+                  "        console.error(\"Invalid response or response is not JSON:\", response);",
+                  "    }",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{url}}api/appusers",
+              "host": ["{{url}}api"],
+              "path": ["appusers"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has an ID\", function () {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property(\"id\");",
+                  "  pm.environment.set(\"userId\", jsonData.id);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has an providerID\", function () {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property(\"providerId\");",
+                  "  pm.environment.set(\"providerId\", jsonData.providerId);",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{cognitoAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"SampleUser\",\n    \"email\": \"test@example.com\",\n    \"profilePic\": \"img.png\",\n    \"providerId\": \"google_999\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{url}}api/appusers",
+              "host": ["{{url}}api"],
+              "path": ["appusers"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify User Creation (By id)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains the correct username\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.name).to.eql(\"SampleUser\");",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains the correct email\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.email).to.eql(\"test@example.com\");",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains the correct profilePic\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.profilePic).to.eql(\"img.png\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{url}}api/appusers/{{userId}}",
+              "host": ["{{url}}api"],
+              "path": ["appusers", "{{userId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify User Creation (By providerId)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{url}}api/appusers/by-provider/{{providerId}}",
+              "host": ["{{url}}api"],
+              "path": ["appusers", "by-provider", "{{providerId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains the updated username\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.name).to.eql(\"UpdatedSampleUser\");",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{cognitoAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"UpdatedSampleUser\",\n    \"email\": \"test@example.com\",\n    \"profilePic\": \"img.png\",\n    \"providerId\": \"google_111\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{url}}api/appusers/{{userId}}",
+              "host": ["{{url}}api"],
+              "path": ["appusers", "{{userId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify User Update",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains the updated name\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.name).to.eql(\"UpdatedSampleUser\");",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains the correct email\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.email).to.eql(\"test@example.com\");",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains the unchanged profilePic\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.profilePic).to.eql(\"img.png\");",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{url}}api/appusers/{{userId}}",
+              "host": ["{{url}}api"],
+              "path": ["appusers", "{{userId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Partial Update User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains the updated name\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.name).to.eql(\"OriginalUser\");",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains the unchanged profilePic\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.profilePic).to.eql(\"img.png\");",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{cognitoAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"OriginalUser\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{url}}api/appusers/{{userId}}",
+              "host": ["{{url}}api"],
+              "path": ["appusers", "{{userId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify User Partial Update",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains the updated name\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.name).to.eql(\"OriginalUser\");",
+                  "});",
+                  "pm.test(\"Response contains the unchanged email\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.email).to.eql(\"test@example.com\");",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains the unchanged profilePic\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.profilePic).to.eql(\"img.png\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{url}}api/appusers/{{userId}}",
+              "host": ["{{url}}api"],
+              "path": ["appusers", "{{userId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{cognitoAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{url}}api/appusers/{{userId}}",
+              "host": ["{{url}}api"],
+              "path": ["appusers", "{{userId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify User Deletion",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{url}}api/appusers/{{userId}}",
+              "host": ["{{url}}api"],
+              "path": ["appusers", "{{userId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
