@@ -15,7 +15,7 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(Arrays.asList(
-                "https://localhost:3000",
+                "http://localhost:3000",
                 "http://localhost",
                 "https://babelbeats.rocks"
         ));

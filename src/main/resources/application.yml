@@ -26,3 +26,5 @@ spring:
 
 server:
   port: ${SERVER_PORT}
+  ssl:
+    enabled: false
