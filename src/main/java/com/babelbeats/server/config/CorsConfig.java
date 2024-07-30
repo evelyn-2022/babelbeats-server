@@ -16,8 +16,9 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(Arrays.asList(
                 "https://localhost:3000",
-                "http://localhost"
-        )); // Adjust the origin as needed
+                "http://localhost",
+                "https://babelbeats.rocks"
+        ));
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         config.setAllowCredentials(true); // If you need to send cookies
