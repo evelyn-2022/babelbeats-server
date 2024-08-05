@@ -21,11 +21,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
                                 .requestMatchers(HttpMethod.GET).permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/appusers").authenticated()
-                                .requestMatchers(HttpMethod.PUT, "/api/appusers/**").authenticated()
-                                .requestMatchers(HttpMethod.PATCH, "/api/appusers/**").authenticated()
-                                .requestMatchers(HttpMethod.DELETE, "/api/appusers/**").authenticated()
-                                .requestMatchers(HttpMethod.DELETE, "/api/appusers").authenticated()
+                                .requestMatchers(HttpMethod.POST, "/appusers").authenticated()
+                                .requestMatchers(HttpMethod.PUT, "/appusers/**").authenticated()
+                                .requestMatchers(HttpMethod.PATCH, "/appusers/**").authenticated()
+                                .requestMatchers(HttpMethod.DELETE, "/appusers/**").authenticated()
+                                .requestMatchers(HttpMethod.DELETE, "/appusers").authenticated()
                                 .anyRequest().permitAll()  // Other requests are permitted without authentication
                 )
                 .oauth2ResourceServer(oauth2 ->
