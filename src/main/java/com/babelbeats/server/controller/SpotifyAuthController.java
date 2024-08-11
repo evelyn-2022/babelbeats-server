@@ -1,12 +1,15 @@
 package com.babelbeats.server.controller;
 
 import com.babelbeats.server.dto.SpotifyTokenResponse;
+import com.babelbeats.server.model.AppUser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import com.babelbeats.server.service.AppUserService;
 
 import java.util.Base64;
 import java.util.Map;
@@ -23,11 +26,14 @@ public class SpotifyAuthController {
     @Value("${spotify.redirect.uri}")
     private String redirectUri;
 
+    @Autowired
+    private AppUserService appUserService;
+
     private RestTemplate restTemplate = new RestTemplate();
     private final String url = "https://accounts.spotify.com/api/token";
 
     @GetMapping("/spotify/callback")
-    public ResponseEntity<SpotifyTokenResponse> spotifyCallback(@RequestParam String code) {
+    public ResponseEntity<SpotifyTokenResponse> spotifyCallback(@RequestParam String code, @RequestParam long id) {
         HttpHeaders headers = createHeaders();
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
@@ -41,8 +47,14 @@ public class SpotifyAuthController {
 
         if (response.getStatusCode() == HttpStatus.OK) {
             SpotifyTokenResponse tokens = response.getBody();
-            // Save tokens to the database associated with the user
 
+            AppUser user = appUserService.getAppUserById(id);
+
+            assert tokens != null;
+            user.setSpotifyAccessToken(tokens.getAccessToken());
+            user.setSpotifyRefreshToken(tokens.getRefreshToken());
+
+            appUserService.updateAppUser(id, user);
             return ResponseEntity.ok(tokens);
         } else {
             return ResponseEntity.status(response.getStatusCode()).build();
@@ -50,7 +62,7 @@ public class SpotifyAuthController {
     }
 
     @PostMapping("/spotify/refresh-token")
-    public ResponseEntity<SpotifyTokenResponse> refreshAccessToken(@RequestBody Map<String, String> body) {
+    public ResponseEntity<SpotifyTokenResponse> refreshAccessToken(@RequestParam Long id, @RequestBody Map<String, String> body) {
         String refreshToken = body.get("refreshToken");
         HttpHeaders headers = createHeaders();
 
@@ -64,7 +76,13 @@ public class SpotifyAuthController {
 
         if (response.getStatusCode() == HttpStatus.OK) {
             SpotifyTokenResponse tokens = response.getBody();
-            // Save the new access token and return it
+
+            AppUser user = appUserService.getAppUserById(id);
+
+            assert tokens != null;
+            user.setSpotifyAccessToken(tokens.getAccessToken());
+            user.setSpotifyAccessToken(refreshToken);
+            appUserService.updateAppUser(id, user);
 
             return ResponseEntity.ok(tokens);
         } else {

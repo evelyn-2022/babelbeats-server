@@ -1,4 +1,5 @@
 package com.babelbeats.server.repository;
+
 import java.util.Optional;
 
 import com.babelbeats.server.model.AppUser;

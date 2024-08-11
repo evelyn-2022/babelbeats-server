@@ -3,6 +3,7 @@ package com.babelbeats.server.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SpotifyTokenResponse {
+    public Object access_token;
     @JsonProperty("access_token")
     private String accessToken;
 
