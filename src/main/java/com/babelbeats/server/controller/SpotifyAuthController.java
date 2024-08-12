@@ -81,7 +81,7 @@ public class SpotifyAuthController {
 
             assert tokens != null;
             user.setSpotifyAccessToken(tokens.getAccessToken());
-            user.setSpotifyAccessToken(refreshToken);
+            user.setSpotifyRefreshToken(refreshToken);
             appUserService.updateAppUser(id, user);
 
             return ResponseEntity.ok(tokens);
