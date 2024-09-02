@@ -30,5 +30,9 @@ spotify:
   redirect:
     uri: ${SPOTIFY_REDIRECT_URI}
 
+genius:
+  api:
+    token: ${GENIUS_API_TOKEN}
+
 server:
   port: ${SERVER_PORT}
