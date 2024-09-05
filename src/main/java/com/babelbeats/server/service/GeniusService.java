@@ -1,14 +1,14 @@
 package com.babelbeats.server.service;
 
+import com.babelbeats.server.exception.BadRequestException;
+import com.babelbeats.server.exception.ResourceNotFoundException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -17,7 +17,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
 public class GeniusService {
-    private static final String GENIUS_API_URL = "https://api.genius.com";
+    private static final String GENIUS_API_URL = "https://api.genius.com/";
     private static final String BASE_URL = "https://genius.com/";
 
     @Value("${genius.api.token}")
@@ -54,20 +54,16 @@ public class GeniusService {
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
         try {
-            // Make the GET request
             ResponseEntity<String> response = restTemplate.exchange(
-                    GENIUS_API_URL + "/search?q=" + query,
+                    GENIUS_API_URL + "search?q=" + query,
                     HttpMethod.GET,
                     entity,
                     String.class
             );
 
-            // Return the response body
             return response.getBody();
         } catch (Exception e) {
-            // Handle exceptions appropriately, such as logging errors or returning a user-friendly message
-            System.err.println("Error occurred while searching for song: " + e.getMessage());
-            return null;
+            throw new RuntimeException("Error occurred while fetching songs: " + e);
         }
     }
 
@@ -80,7 +76,7 @@ public class GeniusService {
             headers.set("Authorization", "Bearer " + geniusApiToken);
 
             HttpEntity<String> entity = new HttpEntity<>(headers);
-            String songUrl = GENIUS_API_URL + "/songs/" + songId;
+            String songUrl = GENIUS_API_URL + "songs/" + songId;
 
             ResponseEntity<String> response = restTemplate.exchange(
                     songUrl,
@@ -92,13 +88,22 @@ public class GeniusService {
             String songPageUrl = extractSongUrlFromResponse(response.getBody());
 
             if (songPageUrl == null) {
-                throw new RuntimeException("Unable to retrieve song URL from Genius.");
+                throw new ResourceNotFoundException("Unable to retrieve song URL from Genius.");
             }
 
             // Step 2: Scrape the lyrics from the song's URL
             return scrapeLyricsFromUrl(songPageUrl);
 
+        } catch (HttpClientErrorException e) {
+            // Check if the status code is 404 and handle it as a resource not found
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                throw new ResourceNotFoundException("Song not found with ID: " + songId);
+            }
+            // For other client errors
+            throw e;
+
         } catch (Exception e) {
+            // Catch any other exceptions and handle them as a server error
             throw new RuntimeException("Error fetching lyrics: " + e.getMessage(), e);
         }
     }
@@ -115,13 +120,13 @@ public class GeniusService {
             JsonNode rootNode = objectMapper.readTree(responseBody);
             return rootNode.path("response").path("song").path("url").asText();
         } catch (Exception e) {
-            throw new RuntimeException("Error parsing song URL from response: " + e.getMessage(), e);
+            throw new ResourceNotFoundException("Error parsing song URL from response: " + e.getMessage());
         }
     }
 
     private String scrapeLyricsFromUrl(String songUrl) {
         if (songUrl == null) {
-            throw new IllegalArgumentException("You must supply either `song_id` or `song_url`.");
+            throw new BadRequestException("You must supply either `song_id` or `song_url`.");
         }
 
         String path = songUrl.replace(BASE_URL, "");;
@@ -136,9 +141,7 @@ public class GeniusService {
         // Find divs containing lyrics
         Elements divs = document.select("div.lyrics, div[class^=Lyrics__Container]");
         if (divs.isEmpty()) {
-            System.out.println("Couldn't find the lyrics section. Please report this if the song has lyrics.\n"
-                    + "Song URL: " + BASE_URL + path);
-            return null;
+            throw new ResourceNotFoundException("No lyrics found.");
         }
 
         // Extract the lyrics text
@@ -177,10 +180,7 @@ public class GeniusService {
         try {
             return restTemplate.getForObject(url, String.class);
         } catch (Exception e) {
-            e.printStackTrace();
             return null;
         }
     }
-
-
 }
