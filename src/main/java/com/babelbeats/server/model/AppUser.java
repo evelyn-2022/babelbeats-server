@@ -16,8 +16,6 @@ public class AppUser {
     private String profilePic;
     private String cognitoSub;
     private String providerId;
-    private String spotifyAccessToken;
-    private String spotifyRefreshToken;
 
     // Getters and Setters
     public Long getId() {
@@ -66,21 +64,5 @@ public class AppUser {
 
     public void setProviderId(String providerId) {
         this.providerId = providerId;
-    }
-
-    public String getSpotifyAccessToken() {
-        return spotifyAccessToken;
-    }
-
-    public void setSpotifyAccessToken(String spotifyAccessToken) {
-        this.spotifyAccessToken = spotifyAccessToken;
-    }
-
-    public String getSpotifyRefreshToken() {
-        return spotifyRefreshToken;
-    }
-
-    public void setSpotifyRefreshToken(String spotifyRefreshToken) {
-        this.spotifyRefreshToken = spotifyRefreshToken;
     }
 }

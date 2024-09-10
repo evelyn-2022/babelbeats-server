@@ -1,6 +1,8 @@
 package com.babelbeats.server.model;
 
 import jakarta.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(indexes = {
@@ -15,6 +17,9 @@ public class Music {
 
     @Column(columnDefinition = "TEXT")
     private String lyrics;
+
+    @ManyToMany(mappedBy = "musicList")
+    private Set<Playlist> playlists = new HashSet<>();
 
     // Getters and Setters
     public Long getId() {
@@ -39,5 +44,13 @@ public class Music {
 
     public void setLyrics(String lyrics) {
         this.lyrics = lyrics;
+    }
+
+    public Set<Playlist> getPlaylists() {
+        return playlists;
+    }
+
+    public void setPlaylists(Set<Playlist> playlists) {
+        this.playlists = playlists;
     }
 }
