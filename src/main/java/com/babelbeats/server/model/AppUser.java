@@ -3,6 +3,9 @@ package com.babelbeats.server.model;
 import jakarta.persistence.*;
 
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_provider_id", columnList = "providerId")
+})
 public class AppUser {
 
     @Id

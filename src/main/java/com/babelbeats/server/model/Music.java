@@ -3,6 +3,9 @@ package com.babelbeats.server.model;
 import jakarta.persistence.*;
 
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_ytb_id", columnList = "ytbId")
+})
 public class Music {
 
     @Id
